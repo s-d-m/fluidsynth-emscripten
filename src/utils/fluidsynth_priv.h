@@ -22,7 +22,9 @@
 #ifndef _FLUIDSYNTH_PRIV_H
 #define _FLUIDSYNTH_PRIV_H
 
+#ifndef NO_GLIB
 #include <glib.h>
+#endif
 
 #include "config.h"
 
@@ -159,6 +161,13 @@ typedef guint64  uint64_t;
 
 #include "fluidsynth.h"
 
+#if defined(NO_GLIB)
+#ifndef TRUE
+#define TRUE  1
+#define FALSE 0
+#endif
+#endif
+
 
 /***************************************************************
  *
@@ -178,7 +187,7 @@ typedef SOCKET fluid_socket_t;
 typedef int fluid_socket_t;
 #endif
 
-#if defined(SUPPORTS_VLA)
+#if defined(SUPPORTS_VLA) || defined(NO_GLIB)
 #  define FLUID_DECLARE_VLA(_type, _name, _len) \
      _type _name[_len]
 #else
@@ -343,6 +352,7 @@ do { strncpy(_dst,_src,_n); \
 #define M_LN10 2.3025850929940456840179914546844
 #endif
 
+#ifndef NO_GLIB
 #ifdef DEBUG
 #define FLUID_ASSERT(a) g_assert(a)
 #else
@@ -351,6 +361,18 @@ do { strncpy(_dst,_src,_n); \
 
 #define FLUID_LIKELY G_LIKELY
 #define FLUID_UNLIKELY G_UNLIKELY
+
+#else
+#define FLUID_ASSERT(a)
+
+#if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 303)
+#define FLUID_LIKELY(x) __builtin_expect(!!(x), 1)
+#define FLUID_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define FLUID_LIKELY(x) (x)
+#define FLUID_UNLIKELY(x) (x)
+#endif
+#endif
 
 char *fluid_error(void);
 

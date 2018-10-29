@@ -35,6 +35,4 @@ To use `libfluidsynth-<version>.js` in AudioWorklet, load it into AudioWorklet b
 
 ## License
 
-The original FluidSynth program, its source codes, and modifications of FluidSynth source codes for building library with Emscripten are licensed under [GNU Lesser General Public License (v2.1)](./LICENSE) (LGPL v2.1).
-
-The source codes used only for building `libfluidsynth-<version>.js` are licensed under [MIT License](./LICENSE.emscripten) (you can choose LGPL v2.1 instead). Note that the wasm binary data, stored in `wasmBinaryFile` variable in `libfluidsynth-<version>.js`, and the wasm file `libfluidsynth-<version>.wasm`, made by FluidSynth source codes, is a *work based on FluidSynth*.
+This program and all source codes, including the original FluidSynth program, its source codes, modifications of FluidSynth source codes for building library with Emscripten, and sources codes used only for building `libfluidsynth-<version>.js`, are licensed under [GNU Lesser General Public License (v2.1)](./LICENSE) (LGPL v2.1).

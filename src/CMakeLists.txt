@@ -378,3 +378,14 @@ else ( MACOSX_FRAMEWORK )
 endif ( MACOSX_FRAMEWORK )
 
 endif ( NOT EMSCRIPTEN_SUPPORT )
+
+# ******* Auto Generated Lookup Tables ******
+
+include(ExternalProject)
+ExternalProject_Add(gentables
+    DOWNLOAD_COMMAND ""
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gentables
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gentables
+    INSTALL_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/gentables/make_tables${CMAKE_EXECUTABLE_SUFFIX} "${CMAKE_BINARY_DIR}/"
+)
+add_dependencies(libfluidsynth-OBJ gentables)

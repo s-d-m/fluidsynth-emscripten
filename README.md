@@ -13,7 +13,12 @@ The original README is here: [README.original.md](./README.original.md)
 3. Make `build` directory
 4. Enter `build` directory and execute `emcmake cmake ..`
     * If no options are specified, and `cmake` is running with `emcmake` (or `emconfigure`), the build configurations are initialized for Emscripten-build mode.
-5. In `build` directory, execute `emmake make`
+5. Make `src/gentables` directory in the current `build` directory
+6. Enter `src/gentables` directory (`build/src/gentables` from the root) and execute `cmake ../../../src/gentables`
+    * This calls original CMake to build native `make_tables` program. Do not use `emcmake` here.
+7. In `build/src/gentables` directory, execute `make`. After successful, execute `./make_tables ../../` (do not forget trailing `/` character).
+    * This is the build step originally written in `src/CMakeLists.txt`.
+8. Return to `build` directory (`cd ../..`) and execute `emmake make`
 
 After successful build, `libfluidsynth-<version>.js` will be created at `build/src` directory.
 

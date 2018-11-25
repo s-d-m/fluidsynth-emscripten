@@ -101,6 +101,7 @@ if ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
     set ( EMSCRIPTEN_SUPPORT on )
     set ( enable-network off )
     set ( enable-readline off )
+    set ( enable-threads off )
 endif ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
 
 # Initialize the library directory name suffix.
@@ -184,10 +185,10 @@ if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_
     set ( CMAKE_SHARED_LINKER_FLAGS
           "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined" )
   endif ( NOT APPLE AND NOT OS2 )
-  
+
   # define some warning flags
   set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -W -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wno-unused-parameter -Wdeclaration-after-statement" )
-  
+
   if ( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
     # icc needs the restrict flag to recognize C99 restrict pointers
     set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -restrict" )
@@ -202,7 +203,7 @@ if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_
   else ( EMSCRIPTEN_SUPPORT )
     set ( CMAKE_C_FLAGS_DEBUG "-g -DDEBUG -fsanitize=undefined ${CMAKE_C_FLAGS_DEBUG}" )
   endif ( EMSCRIPTEN_SUPPORT )
-  
+
 endif ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "Intel" )
 
 # Windows
@@ -239,7 +240,7 @@ if ( WIN32 )
   set ( LIBFLUID_CPPFLAGS "-DFLUIDSYNTH_DLL_EXPORTS" )
   set ( FLUID_CPPFLAGS "-DFLUIDSYNTH_NOT_A_DLL" )
   if  ( MSVC )
-    # statically link in the CRT library to avoid a bunch of runtime DLL dependencies and allow 
+    # statically link in the CRT library to avoid a bunch of runtime DLL dependencies and allow
     # the CI windows builds to be run under WinXP
     foreach ( flag_var
         CMAKE_C_FLAGS
@@ -257,12 +258,12 @@ if ( WIN32 )
         string ( REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}" )
       endif ( ${flag_var} MATCHES "/MD" )
     endforeach ( flag_var )
-    
+
   else ( MSVC )
     # only set debug postfix if not MSVS building
     set ( CMAKE_DEBUG_POSTFIX "_debug" )
   endif ( MSVC )
-  
+
   # MinGW compiler (a Windows GCC port)
   if ( MINGW )
     set ( MINGW32 1 )
@@ -355,7 +356,7 @@ if ( enable-profiling )
     elseif ( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
       set ( OPT_FLAGS "" )
     endif ( )
-    
+
     set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS}" )
 endif ( enable-profiling )
 
@@ -460,17 +461,17 @@ if(NOT enable-pkgconfig)
     FIND_LIBRARY( GTHREAD_LIB NAMES gthread gthread-2.0 PATH GTHREAD_LIBRARY_DIR )
     FIND_PATH( GLIBH_DIR glib.h PATH GLIB_INCLUDE_DIR )
     FIND_PATH( GLIBCONF_DIR glibconfig.h PATH GLIBCONF_INCLUDE_DIR )
-    
+
     IF( GLIB_LIB MATCHES "GLIB_LIB-NOTFOUND" OR
             GTHREAD_LIB MATCHES "GTHREAD_LIB-NOTFOUND" OR
             GLIBH_DIR MATCHES "GLIBH_DIR-NOTFOUND" OR
             GLIBCONF_DIR MATCHES "GLIBCONF_DIR-NOTFOUND")
             message( WARNING "Not sure if I found GLIB, continuing anyway.")
     ENDIF()
-    
+
     SET( GLIB_INCLUDE_DIRS ${GLIBH_DIR} ${GLIBCONF_DIR} )
     SET( GLIB_LIBRARIES ${GLIB_LIB} ${GTHREAD_LIB} )
-    
+
     message( STATUS "GLIB_INCLUDE_DIRS: " ${GLIB_INCLUDE_DIRS} )
     message( STATUS "GLIB_LIBRARIES: " ${GLIB_LIBRARIES} )
 
@@ -521,7 +522,7 @@ else(NOT enable-pkgconfig)
     else ( enable-portaudio )
     unset_pkg_config ( PORTAUDIO )
     endif ( enable-portaudio )
-    
+
     unset ( JACK_SUPPORT CACHE )
     if ( enable-jack )
     pkg_check_modules ( JACK jack )
@@ -529,7 +530,7 @@ else(NOT enable-pkgconfig)
     else ( enable-jack )
     unset_pkg_config ( JACK )
     endif ( enable-jack )
-    
+
     unset ( LASH_SUPPORT CACHE )
     if ( enable-lash )
     pkg_check_modules ( LASH lash-1.0>=0.3 )
@@ -558,7 +559,7 @@ else(NOT enable-pkgconfig)
         set ( LADSPA 1 )
     endif ( LADSPA_SUPPORT )
     endif ( enable-ladspa )
-    
+
 endif(NOT enable-pkgconfig)
 else (NOT EMSCRIPTEN_SUPPORT)
     FILE( STRINGS "emscripten/exports.txt" EMSCRIPTEN_EXPORTS_OPTIONS )
@@ -620,7 +621,7 @@ if ( OpenMP_FOUND OR OpenMP_C_FOUND )
     if ( ( NOT OpenMP_C_SPEC_DATE LESS "201307" ) OR NOT ( OpenMP_C_VERSION VERSION_LESS "4.0" ) )
         set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
         set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-        
+
         # currently no need to link against openMP runtime lib(s). If need be, uncomment below.
         #  set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}" )
         #  set ( LIBFLUID_LIBS "${OpenMP_C_LIBRARIES};${LIBFLUID_LIBS}" )

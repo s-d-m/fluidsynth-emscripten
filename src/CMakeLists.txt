@@ -144,6 +144,10 @@ endif ( OBOE_SUPPORT )
 
 set ( config_SOURCES ${CMAKE_BINARY_DIR}/config.h )
 
+if ( NOT EMSCRIPTEN_SUPPORT )
+  set ( fluid_shell_SOURCES bindings/fluid_cmd.c bindings/fluid_cmd.h )
+endif ( NOT EMSCRIPTEN_SUPPORT )
+
 set ( libfluidsynth_SOURCES
     utils/fluid_conv.c
     utils/fluid_conv.h
@@ -209,8 +213,6 @@ set ( libfluidsynth_SOURCES
     drivers/fluid_adriver.h
     drivers/fluid_mdriver.c
     drivers/fluid_mdriver.h
-    bindings/fluid_cmd.c
-    bindings/fluid_cmd.h
     bindings/fluid_filerenderer.c
     bindings/fluid_ladspa.c
     bindings/fluid_ladspa.h
@@ -281,6 +283,7 @@ add_library ( libfluidsynth-OBJ OBJECT
     ${fluid_dsound_SOURCES}
     ${fluid_waveout_SOURCES}
     ${fluid_winmidi_SOURCES}
+    ${fluid_shell_SOURCES}
     ${fluid_sdl2_SOURCES}
     ${fluid_libinstpatch_SOURCES}
     ${libfluidsynth_SOURCES}
@@ -294,9 +297,13 @@ if ( LIBFLUID_CPPFLAGS )
     PROPERTIES COMPILE_FLAGS ${LIBFLUID_CPPFLAGS} )
 endif ( LIBFLUID_CPPFLAGS )
 
+if ( EMSCRIPTEN_SUPPORT )
+add_executable ( libfluidsynth $<TARGET_OBJECTS:libfluidsynth-OBJ> )
+else ( EMSCRIPTEN_SUPPORT )
 # note: by default this target creates a shared object (or dll). To build a
 # static library instead, set the option BUILD_SHARED_LIBS to FALSE.
 add_library ( libfluidsynth $<TARGET_OBJECTS:libfluidsynth-OBJ> )
+endif ( EMSCRIPTEN_SUPPORT )
 
 if ( MACOSX_FRAMEWORK )
      set_property ( SOURCE ${public_HEADERS}
@@ -330,6 +337,15 @@ elseif ( WIN32 )
       VERSION ${LIB_VERSION_INFO}
       SOVERSION ${LIB_VERSION_CURRENT}
     )
+elseif ( EMSCRIPTEN_SUPPORT )
+  set_target_properties ( libfluidsynth
+    PROPERTIES
+      NO_SONAME TRUE
+      PUBLIC_HEADER "${public_HEADERS}"
+      PREFIX "lib"
+      OUTPUT_NAME "fluidsynth"
+      SUFFIX "-${VERSION}.js"
+  )
 else ( MACOSX_FRAMEWORK )
   set_target_properties ( libfluidsynth
     PROPERTIES
@@ -365,6 +381,7 @@ target_link_libraries ( libfluidsynth
 )
 
 # ************ CLI program ************
+if ( NOT EMSCRIPTEN_SUPPORT )
 
 set ( fluidsynth_SOURCES fluidsynth.c )
 
@@ -398,6 +415,8 @@ else ( MACOSX_FRAMEWORK )
 )
    install ( FILES ${public_main_HEADER} DESTINATION ${INCLUDE_INSTALL_DIR} )
 endif ( MACOSX_FRAMEWORK )
+
+endif ( NOT EMSCRIPTEN_SUPPORT )
 
 # ******* Auto Generated Lookup Tables ******
 

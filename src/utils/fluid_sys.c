@@ -20,6 +20,9 @@
 
 #include "fluid_sys.h"
 
+#ifdef NO_GLIB
+#undef NETWORK_SUPPORT
+#endif
 
 #if WITH_READLINE
 #include <readline/readline.h>
@@ -50,12 +53,14 @@
 #define FLUID_SYS_TIMER_HIGH_PRIO_LEVEL         10
 
 
+#ifndef NO_GLIB
 typedef struct
 {
     fluid_thread_func_t func;
     void *data;
     int prio_level;
 } fluid_thread_info_t;
+#endif
 
 struct _fluid_timer_t
 {
@@ -310,7 +315,11 @@ char *fluid_strtok(char **str, char *delim)
  */
 void fluid_msleep(unsigned int msecs)
 {
+#ifndef NO_GLIB
     g_usleep(msecs * 1000);
+#else
+    usleep(msecs * 1000);
+#endif
 }
 
 /**
@@ -345,6 +354,7 @@ fluid_utime(void)
 {
     double utime;
 
+#ifndef NO_GLIB
 #if GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 28
     /* use high precision monotonic clock if available (g_monotonic_time().
      * For Winfdows, if this clock is actually implemented as low prec. clock
@@ -374,6 +384,11 @@ fluid_utime(void)
     GTimeVal timeval;
     g_get_current_time(&timeval);
     utime = (timeval.tv_sec * 1000000.0 + timeval.tv_usec);
+#endif
+#else
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    utime = (t.tv_sec * 1000000.0 + t.tv_usec);
 #endif
 
     return utime;
@@ -925,6 +940,7 @@ void fluid_profile_start_stop(unsigned int end_ticks, short clear_data)
  *
  */
 
+#ifndef NO_GLIB
 #if OLD_GLIB_THREAD_API
 
 /* Rather than inline this one, we just declare it as a function, to prevent
@@ -1057,6 +1073,7 @@ fluid_thread_join(fluid_thread_t *thread)
 
     return FLUID_OK;
 }
+#endif /* NO_GLIB */
 
 
 static fluid_thread_return_t
@@ -1126,6 +1143,7 @@ new_fluid_timer(int msec, fluid_timer_callback_t callback, void *data,
     timer->thread = NULL;
     timer->auto_destroy = auto_destroy;
 
+#if !defined(NO_GLIB) || defined(USE_PTHREAD)
     if(new_thread)
     {
         timer->thread = new_fluid_thread("timer", fluid_timer_run, timer, high_priority
@@ -1138,6 +1156,7 @@ new_fluid_timer(int msec, fluid_timer_callback_t callback, void *data,
         }
     }
     else
+#endif
     {
         fluid_timer_run(timer);   /* Run directly, instead of as a separate thread */
 
@@ -1173,6 +1192,7 @@ delete_fluid_timer(fluid_timer_t *timer)
 int
 fluid_timer_join(fluid_timer_t *timer)
 {
+#if !defined(NO_GLIB) || defined(USE_PTHREAD)
     int auto_destroy;
 
     if(timer->thread)
@@ -1185,6 +1205,7 @@ fluid_timer_join(fluid_timer_t *timer)
             timer->thread = NULL;
         }
     }
+#endif
 
     return FLUID_OK;
 }

@@ -22,6 +22,9 @@
 cmake_minimum_required ( VERSION 3.1.0 ) # because of CMAKE_C_STANDARD
 project ( FluidSynth C )
 set ( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_admin )
+if ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
+    list (APPEND CMAKE_MODULE_PATH "${EMSCRIPTEN_ROOT_PATH}/cmake/Modules" )
+endif ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
 
 # FluidSynth package name
 set ( PACKAGE "fluidsynth" )
@@ -101,6 +104,15 @@ if ( CMAKE_SYSTEM MATCHES "OS2" )
     set ( enable-ipv6 off )
 endif ( CMAKE_SYSTEM MATCHES "OS2" )
 
+unset ( EMSCRIPTEN_SUPPORT CACHE )
+if ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
+    option ( enable-separate-wasm "generate separate .wasm file" off )
+    set ( EMSCRIPTEN_SUPPORT on )
+    set ( enable-network off )
+    set ( enable-readline off )
+    set ( enable-threads off )
+endif ( CMAKE_SYSTEM_NAME MATCHES "Emscripten" )
+
 # Initialize the library directory name suffix.
 if (NOT MINGW AND NOT MSVC AND NOT CMAKE_SYSTEM_NAME MATCHES "FreeBSD|DragonFly")
 if ( CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -177,8 +189,10 @@ unset ( ENABLE_UBSAN CACHE )
 
 if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   if ( NOT APPLE AND NOT OS2 )
-    set ( CMAKE_EXE_LINKER_FLAGS
-          "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed" )
+    if ( NOT EMSCRIPTEN_SUPPORT )
+      set ( CMAKE_EXE_LINKER_FLAGS
+            "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed" )
+    endif ( NOT EMSCRIPTEN_SUPPORT )
     set ( CMAKE_SHARED_LINKER_FLAGS
           "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined" )
   endif ( NOT APPLE AND NOT OS2 )
@@ -187,7 +201,11 @@ if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_C
   set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -W -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wno-unused-parameter -Wdeclaration-after-statement -Werror=implicit-function-declaration" )
 
   # prepend to build type specific flags, to allow users to override
-  set ( CMAKE_C_FLAGS_DEBUG "-g ${CMAKE_C_FLAGS_DEBUG}" )
+  if ( EMSCRIPTEN_SUPPORT )
+    set ( CMAKE_C_FLAGS_DEBUG "-g4 ${CMAKE_C_FLAGS_DEBUG}" )
+  else ( EMSCRIPTEN_SUPPORT )
+    set ( CMAKE_C_FLAGS_DEBUG "-g ${CMAKE_C_FLAGS_DEBUG}" )
+  endif ( EMSCRIPTEN_SUPPORT )
 
   if ( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
     # icc needs the restrict flag to recognize C99 restrict pointers
@@ -435,6 +453,11 @@ if ( ASTYLE )
     )
 endif(ASTYLE)
 
+unset( NO_GLIB CACHE )
+unset( GLIB_INCLUDE_DIRS CACHE )
+unset( GLIB_LIBRARIES CACHE )
+
+if(NOT EMSCRIPTEN_SUPPORT)
 if(NOT enable-pkgconfig)
 
     FIND_LIBRARY( GLIB_LIB NAMES glib glib-2.0 PATH GLIB_LIBRARY_DIR )
@@ -593,6 +616,18 @@ else(NOT enable-pkgconfig)
     endif ( enable-readline )
 
 endif(NOT enable-pkgconfig)
+else (NOT EMSCRIPTEN_SUPPORT)
+    FILE( STRINGS "emscripten/exports.txt" EMSCRIPTEN_EXPORTS_OPTIONS NEWLINE_CONSUME )
+    STRING ( REPLACE "\n" "" EMSCRIPTEN_EXPORTS_OPTIONS "${EMSCRIPTEN_EXPORTS_OPTIONS}" )
+    STRING ( REGEX REPLACE ",$" "" EMSCRIPTEN_EXPORTS_OPTIONS "${EMSCRIPTEN_EXPORTS_OPTIONS}" )
+    SET( NO_GLIB 1 )
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNO_GLIB -DFLUIDSYNTH_DLL_EXPORTS" )
+    if ( NOT enable-separate-wasm )
+        SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s SINGLE_FILE=1" )
+    endif ( NOT enable-separate-wasm )
+    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --pre-js ${CMAKE_SOURCE_DIR}/emscripten/src/pre.js -s ENVIRONMENT=web -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_FUNCTIONS='[${EMSCRIPTEN_EXPORTS_OPTIONS}]' -s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"FS\"]'" )
+    SET( CMAKE_EXECUTABLE_SUFFIX ".js" )
+endif (NOT EMSCRIPTEN_SUPPORT)
 
 unset ( AUFILE_SUPPORT CACHE )
 if ( enable-aufile )

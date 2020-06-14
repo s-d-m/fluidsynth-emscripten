@@ -85,4 +85,4 @@ const includes = gatherIncludeFiles(INCLUDE_DIR, true, (e) => e === 'shell.h');
 const funcs = flattenArray(includes.map((file) => gatherAPIDeclarations(file)))
     .filter((name) => IGNORE_FUNCTIONS.indexOf(name) < 0);
 
-fs.writeFileSync(OUTPUT_NAME, '"_' + funcs.join('","_') + '"\n');
+fs.writeFileSync(OUTPUT_NAME, '"_' + funcs.join('",\n"_') + '",\n');

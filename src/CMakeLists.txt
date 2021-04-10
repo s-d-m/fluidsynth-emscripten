@@ -305,7 +305,11 @@ if ( LIBFLUID_CPPFLAGS )
 endif ( LIBFLUID_CPPFLAGS )
 
 if ( EMSCRIPTEN_SUPPORT )
-add_executable ( libfluidsynth $<TARGET_OBJECTS:libfluidsynth-OBJ> )
+  if ( BUILD_SHARED_LIBS )
+    add_executable ( libfluidsynth $<TARGET_OBJECTS:libfluidsynth-OBJ> )
+  else ( BUILD_SHARED_LIBS )
+    add_library ( libfluidsynth $<TARGET_OBJECTS:libfluidsynth-OBJ> )
+  endif ( BUILD_SHARED_LIBS )
 else ( EMSCRIPTEN_SUPPORT )
 # note: by default this target creates a shared object (or dll). To build a
 # static library instead, set the option BUILD_SHARED_LIBS to FALSE.
@@ -345,14 +349,25 @@ elseif ( WIN32 )
       SOVERSION ${LIB_VERSION_CURRENT}
     )
 elseif ( EMSCRIPTEN_SUPPORT )
-  set_target_properties ( libfluidsynth
-    PROPERTIES
-      NO_SONAME TRUE
-      PUBLIC_HEADER "${public_HEADERS}"
-      PREFIX "lib"
-      OUTPUT_NAME "fluidsynth"
-      SUFFIX "-${VERSION}.js"
-  )
+  if ( BUILD_SHARED_LIBS )
+    set_target_properties ( libfluidsynth
+      PROPERTIES
+        NO_SONAME TRUE
+        PUBLIC_HEADER "${public_HEADERS}"
+        PREFIX "lib"
+        OUTPUT_NAME "fluidsynth"
+        SUFFIX "-${VERSION}.js"
+    )
+  else ( BUILD_SHARED_LIBS )
+    set_target_properties ( libfluidsynth
+      PROPERTIES
+        PUBLIC_HEADER "${public_HEADERS}"
+        PREFIX "lib"
+        OUTPUT_NAME "fluidsynth"
+        VERSION ${LIB_VERSION_INFO}
+        SOVERSION ${LIB_VERSION_CURRENT}
+    )
+  endif ( BUILD_SHARED_LIBS )
 else ( MACOSX_FRAMEWORK )
   set_target_properties ( libfluidsynth
     PROPERTIES

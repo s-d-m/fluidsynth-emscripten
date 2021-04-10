@@ -23,6 +23,12 @@ After successful build, `libfluidsynth-<version>.js` will be created at `build/s
     * For AudioWorklet, you cannot use `*.wasm` file directly.
 * In Emscripten-build mode, standalone application named `fluidsynth` is not emitted.
 
+## Build static library for Emscripten
+
+Please specify `-D BUILD_SHARED_LIBS=off` on calling emcmake. (e.g. `emcmake cmake -D BUILD_SHARED_LIBS=off ..`)
+
+In this mode, you can also build sources under `doc` directory (e.g. `cd build/doc && make fluidsynth_simple -j16`), although all exportable functions will be exported.
+
 ## Usage
 
 Place `libfluidsynth-<version>.js` file to your space and load `libfluidsynth-<version>.js`. After load, almost all FluidSynth API functions are accessible via `Module` object (note that all function names have the prefix `_`).

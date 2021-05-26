@@ -19,12 +19,14 @@
 
 # CMake based build system. Pedro Lopez-Cabanillas <plcl@users.sf.net>
 
-include ( FluidUnitTest )
-add_custom_target ( demo )
+if ( NOT EMSCRIPTEN_SUPPORT )
+  include ( FluidUnitTest )
+  add_custom_target ( demo )
 
-ADD_FLUID_DEMO ( example )
-ADD_FLUID_DEMO ( fluidsynth_arpeggio )
-ADD_FLUID_DEMO ( fluidsynth_fx )
-ADD_FLUID_DEMO ( fluidsynth_metronome )
-ADD_FLUID_DEMO ( fluidsynth_simple )
+  ADD_FLUID_DEMO ( example )
+  ADD_FLUID_DEMO ( fluidsynth_arpeggio )
+  ADD_FLUID_DEMO ( fluidsynth_fx )
+  ADD_FLUID_DEMO ( fluidsynth_metronome )
+  ADD_FLUID_DEMO ( fluidsynth_simple )
+endif ( NOT EMSCRIPTEN_SUPPORT )
 

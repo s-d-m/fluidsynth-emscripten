@@ -5,4 +5,7 @@ var window = typeof window !== 'undefined' ? window : {};
 // expose wasm API to AudioWorklet
 if (typeof AudioWorkletGlobalScope !== 'undefined' && AudioWorkletGlobalScope) {
     AudioWorkletGlobalScope.wasmModule = Module;
+    AudioWorkletGlobalScope.addOnPreRun = addOnPreRun;
+    AudioWorkletGlobalScope.addOnInit = addOnInit;
+    AudioWorkletGlobalScope.addOnPostRun = addOnPostRun;
 }

@@ -7,12 +7,14 @@ The original README is here: [README.original.md](./README.original.md)
 
 ## Build
 
+> Tested with Emscripten version 3.1.10.
+
 1. (Optional) Update `emscripten/exports.txt`, containing export functions for JS program
     * The script `emscripten/make-exports.js` will update this automatically, gathering functions from `include` directory.
 2. Make sure that Emscripten is usable on the current environment
 3. Make `build` directory
-4. Enter `build` directory and execute `emcmake cmake ..`
-    * If no options are specified, and `cmake` is running with `emcmake` (or `emconfigure`), the build configurations are initialized for Emscripten-build mode.
+4. Enter `build` directory and execute `emcmake cmake -Denable-oss=off -DCMAKE_BUILD_TYPE=Release ..`
+    * If no other options are specified, and `cmake` is running with `emcmake` (or `emconfigure`), the build configurations are initialized for Emscripten-build mode.
 5. In `build` directory, execute `emmake make`
 
 After successful build, `libfluidsynth-<version>.js` will be created at `build/src` directory.

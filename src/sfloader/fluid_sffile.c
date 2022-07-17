@@ -343,7 +343,7 @@ SFData *fluid_sffile_open(const char *fname, const fluid_file_callbacks_t *fcbs)
 
     FLUID_MEMSET(sf, 0, sizeof(SFData));
 
-    fluid_rec_mutex_init(sf->mtx);
+    fluid_rec_mutex_init(&sf->mtx);
     sf->fcbs = fcbs;
 
     if((sf->sffd = fcbs->fopen(fname)) == NULL)

@@ -133,7 +133,7 @@ new_fluid_sequencer2(int use_system_timer)
     seq->useSystemTimer = use_system_timer ? 1 : 0;
     seq->startMs = seq->useSystemTimer ? fluid_curtime() : 0;
 
-    fluid_rec_mutex_init(seq->mutex);
+    fluid_rec_mutex_init(&seq->mutex);
 
     seq->queue = new_fluid_seq_queue(FLUID_SEQUENCER_EVENTS_MAX);
     if(seq->queue == NULL)

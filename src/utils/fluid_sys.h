@@ -442,7 +442,7 @@ static FLUID_INLINE void delete_fluid_cond_mutex(fluid_cond_mutex_t *m)
 {
     if (!m)
         return;
-    fluid_mutex_destroy(m);
+    pthread_mutex_destroy(*m);
     free(m);
 }
 #define fluid_cond_mutex_lock(m)        pthread_mutex_lock(m)
@@ -452,7 +452,7 @@ static FLUID_INLINE fluid_cond_mutex_t *new_fluid_cond_mutex(void)
 {
     fluid_cond_mutex_t *m = (fluid_cond_mutex_t *)malloc(sizeof(fluid_cond_mutex_t));
     if (m)
-        fluid_mutex_init(m);
+        fluid_mutex_init(*m);
     return m;
 }
 
@@ -460,7 +460,7 @@ static FLUID_INLINE fluid_cond_mutex_t *new_fluid_cond_mutex(void)
 typedef pthread_cond_t fluid_cond_t;
 static FLUID_INLINE fluid_cond_t *new_fluid_cond()
 {
-    pthread_cond_t *r = (struct pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+    pthread_cond_t *r = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
     if (r)
         pthread_cond_init(r, NULL);
     return r;
@@ -685,7 +685,7 @@ new_fluid_thread(const char *name, fluid_thread_func_t func, void *data, int pri
         pthread_attr_setdetachstate(&attr, detach);
         pthread_attr_setschedparam(&attr, &sched);
 
-		r = pthread_create(t, &attr, func, data);
+	int r = pthread_create(t, &attr, func, data);
         pthread_attr_destroy(&attr);
         if (r != 0)
         {
@@ -696,7 +696,7 @@ new_fluid_thread(const char *name, fluid_thread_func_t func, void *data, int pri
     return t;
 }
 #define delete_fluid_thread(_pthread) free(_pthread)
-#define fluid_thread_self_set_prio(prio_level) pthread_setschedprio(pthread_self(), (prio_level))
+//#define fluid_thread_self_set_prio(prio_level) pthread_setschedprio(pthread_self(), (prio_level))
 #define fluid_thread_join(_pthread) (pthread_join(*_pthread, NULL), FLUID_OK)
 
 #else /* defined(USE_PTHREAD) */

@@ -274,7 +274,7 @@ new_fluid_settings(void)
         return NULL;
     }
 
-    fluid_rec_mutex_init(settings->mutex);
+    fluid_rec_mutex_init(&settings->mutex);
     fluid_settings_init(settings);
     return settings;
 }

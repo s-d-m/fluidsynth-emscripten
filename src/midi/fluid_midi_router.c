@@ -102,7 +102,7 @@ new_fluid_midi_router(fluid_settings_t *settings, handle_midi_event_func_t handl
     /* Retrieve the number of MIDI channels for range limiting */
     fluid_settings_getint(settings, "synth.midi-channels", &router->nr_midi_channels);
 
-    fluid_mutex_init(router->rules_mutex);
+    fluid_mutex_init(&router->rules_mutex);
 
     router->event_handler = handler;
     router->event_handler_data = event_handler_data;

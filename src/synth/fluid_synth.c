@@ -654,7 +654,7 @@ new_fluid_synth(fluid_settings_t *settings)
     }
 #endif
 
-    fluid_rec_mutex_init(synth->mutex);
+    fluid_rec_mutex_init(&synth->mutex);
     fluid_settings_getint(settings, "synth.threadsafe-api", &synth->use_mutex);
     synth->public_api_count = 0;
 
